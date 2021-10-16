@@ -10,11 +10,6 @@ namespace ModelingSystem
     {
         public int NumInterruptMessages { get; set; }
         public int NumSpareChannel { get; set; }
-
-        public override string ToString()
-        {
-            return String.Format("Число прерванных сообщений: {0,7}, Количество включений запасного канала: {1,7}",
-                NumInterruptMessages, NumSpareChannel);
-        }
+        public int NumTime { get; set; }
     }
 }

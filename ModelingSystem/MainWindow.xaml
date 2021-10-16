@@ -40,12 +40,18 @@
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
 
-            <TextBox Grid.Column="1" Grid.Row="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Text="7"></TextBox>
-            <TextBox Grid.Column="1" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Text="23"></TextBox>
-            <TextBox Grid.Column="1" Grid.Row="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Text="200"></TextBox>
-            <TextBox Grid.Column="1" Grid.Row="3" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Text="9"></TextBox>
-            <TextBox Grid.Column="1" Grid.Row="4" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Text="9"></TextBox>
-            <TextBox Grid.Column="1" Grid.Row="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Text="5"></TextBox>
+            <TextBox Grid.Column="1" Grid.Row="0" VerticalContentAlignment="Center"
+                     HorizontalContentAlignment="Left" Text="7" Name="TextboxT1"/>
+            <TextBox Grid.Column="1" Grid.Row="1" VerticalContentAlignment="Center"
+                     HorizontalContentAlignment="Left" Text="23" Name="TextboxT2"/>
+            <TextBox Grid.Column="1" Grid.Row="2" VerticalContentAlignment="Center"
+                     HorizontalContentAlignment="Left" Text="200" Name="TextboxT3"/>
+            <TextBox Grid.Column="1" Grid.Row="3" VerticalContentAlignment="Center"
+                     HorizontalContentAlignment="Left" Text="9" Name="TextboxT4"/>
+            <TextBox Grid.Column="1" Grid.Row="4" VerticalContentAlignment="Center"
+                     HorizontalContentAlignment="Left" Text="9" Name="TextboxT5"/>
+            <TextBox Grid.Column="1" Grid.Row="5" VerticalContentAlignment="Center"
+                     HorizontalContentAlignment="Left" Text="5" Name="TextboxT"/>
 
             <Label Grid.Column="0" Grid.Row="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
                 t1:
@@ -87,8 +93,8 @@
 
         <!--Кнопки-->
         <StackPanel Grid.Row="1" Grid.Column="0" Margin="5,0,5,5">
-            <Button Margin="0,5,0,5">Старт</Button>
-            <Button Margin="0,0,0,5">Стоп</Button>
+            <Button Margin="0,5,0,5" Click="Button_Click_Start" Name="Button_Start">Запустить</Button>
+            <Button Margin="0,0,0,5" Click="Button_Click_End">Завершить</Button>
             <Slider Maximum="100" Margin="0,0,0,5" />
         </StackPanel>
 
@@ -96,6 +102,9 @@
         <ListView Name="lvIndicators" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="5,7,5,5">
             <ListView.View>
                 <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding NumTime}">
+                        t()
+                    </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding NumInterruptMessages}">
                         Число прерванных сообщений
                     </GridViewColumn>
