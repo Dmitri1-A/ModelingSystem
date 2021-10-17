@@ -26,7 +26,7 @@ namespace ModelingSystem
 
         private ObservableCollection<Indicator> Indicators;
 
-        private SimulationModel simulationModel;
+        private SimulationModel simulationModel = null;
 
         public MainWindow()
         {
@@ -144,11 +144,27 @@ namespace ModelingSystem
         }
 
         /// <summary>
-        /// Изменяет изображение на экране,
+        /// Изменяет изображение на экране, в соответствии с имитационной моделью
         /// </summary>
         private void ChangeStateScene(SimulationModel model)
         {
-            
+            progressBar.Value = model.TimeModel;
+
+            switch (model.StateChannelMain)
+            {
+                case SimulationModel.StateChannel.Enabled:
+                    rectangleMainChannel.Fill = null;
+                    break;
+                case SimulationModel.StateChannel.Transfer:
+                    rectangleMainChannel.Fill = Brushes.GreenYellow;
+                    break;
+                case SimulationModel.StateChannel.Broken:
+                    rectangleMainChannel.Fill = Brushes.Red;
+                    break;
+                default:
+                    rectangleMainChannel.Fill = null;
+                    break;
+            }
         }
 
         #region Обработчики событий
@@ -174,10 +190,13 @@ namespace ModelingSystem
                 int t5 = int.Parse(TextboxT5.Text);
                 int T = int.Parse(TextboxT.Text);
 
-                Button_Start.IsEnabled = false;
-
                 simulationModel = new SimulationModel(T, t1, t2, t3, t4, t5,
                     dispatcher: Dispatcher, action: ChangeStateScene);
+                simulationModel.TimeSpeed = (int)sliderSpeed.Value;
+
+                Button_Start.IsEnabled = false;
+                progressBar.Maximum = simulationModel.TimeEnd;
+                progressBar.Minimum = 0;
 
                 tokenSource = new CancellationTokenSource();
 
@@ -193,10 +212,17 @@ namespace ModelingSystem
                 {
                     tokenSource.Dispose();
                     tokenSource = null;
+                    simulationModel = null;
                     Button_Start.IsEnabled = true;
                 }
             }
         }
         #endregion
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (null != simulationModel)
+                simulationModel.TimeSpeed = (int)e.NewValue;
+        }
     }
 }

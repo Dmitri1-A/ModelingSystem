@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ModelingSystem"
         mc:Ignorable="d"
-        Title="Лабораторная работ №1 Анистратов Дмитрий" Height="450" Width="816">
+        Title="Лабораторная работ №1 Анистратов Дмитрий" Height="500" Width="820" MinWidth="820" MinHeight="500">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition></RowDefinition>
@@ -17,9 +17,9 @@
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <Canvas Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2">
+        <Canvas Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
             <Rectangle Height="197" Canvas.Left="10" Stroke="Black" Canvas.Top="10" Width="195"/>
-            <Rectangle Height="35" Canvas.Left="210" Stroke="Black" Canvas.Top="68" Width="256"/>
+            <Rectangle Name="rectangleMainChannel" Height="35" Canvas.Left="210" Stroke="Black" Canvas.Top="68" Width="256"/>
             <Rectangle Height="36" Canvas.Left="210" Stroke="Black" Canvas.Top="108" Width="256"/>
         </Canvas>
 
@@ -66,7 +66,7 @@
             <Label Grid.Column="0" Grid.Row="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
                 t3:
                 <Label.ToolTip>
-                    <ToolTip>Интервал времени, через который происохдят сбои в основном канале</ToolTip>
+                    <ToolTip>Интервал времени, через который происходят сбои в основном канале</ToolTip>
                 </Label.ToolTip>
             </Label>
             <Label Grid.Column="0" Grid.Row="3" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
@@ -99,7 +99,10 @@
                     <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0">Ускорить:</Label>
-                <Slider Grid.Column="1" Maximum="100" Margin="0,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                <Slider Name="sliderSpeed" Grid.Column="1" Margin="0,0,0,0" HorizontalAlignment="Stretch" 
+                        VerticalAlignment="Center" Minimum="1" Value="1"
+                        ValueChanged="Slider_ValueChanged" SmallChange="1"
+                        TickPlacement="BottomRight" IsSnapToTickEnabled="True" />
             </Grid>
         </StackPanel>
 
@@ -109,12 +112,12 @@
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
             
-            <ProgressBar Name="progressBar" Grid.Row="0"></ProgressBar>
+            <ProgressBar Name="progressBar" Grid.Row="0" Margin="5,0,5,0"></ProgressBar>
             <!--Таблица-->
             <ListView Name="lvIndicators" Grid.Row="1" Margin="5,7,5,5">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn DisplayMemberBinding="{Binding NumTime}">
+                        <!--<GridViewColumn DisplayMemberBinding="{Binding NumTime}">
                             t()
                         </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding NumInterruptMessages}">
@@ -122,7 +125,7 @@
                         </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding NumSpareChannel}">
                             Количество включений запасного канала
-                        </GridViewColumn>
+                        </GridViewColumn>-->
                     </GridView>
                 </ListView.View>
             </ListView>
