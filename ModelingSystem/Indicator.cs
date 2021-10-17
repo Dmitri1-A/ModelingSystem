@@ -8,8 +8,8 @@ namespace ModelingSystem
 {
     public class Indicator
     {
-        public int NumInterruptMessages { get; set; }
-        public int NumSpareChannel { get; set; }
-        public int NumTime { get; set; }
+        public int InterruptedMessageN { get; set; }
+        public int ReserveChannelN { get; set; }
+        public int TimeN { get; set; }
     }
 }
