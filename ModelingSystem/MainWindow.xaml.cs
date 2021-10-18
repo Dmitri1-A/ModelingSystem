@@ -24,21 +24,17 @@ namespace ModelingSystem
     {
         private CancellationTokenSource tokenSource = null;
 
-        private ObservableCollection<Indicator> Indicators;
+        private ObservableCollection<StateSimulationModel> simulationModels;
 
         private SimulationModel simulationModel = null;
 
         public MainWindow()
         {
-            Indicators = new ObservableCollection<Indicator>()
-            { 
-                new Indicator {InterruptedMessageN = 1, ReserveChannelN = 3, TimeN = 0 },
-                new Indicator {InterruptedMessageN = 2, ReserveChannelN = 5, TimeN = 1 },
-            };
+            simulationModels = new ObservableCollection<StateSimulationModel>();
 
             InitializeComponent();
 
-            lvIndicators.ItemsSource = Indicators;
+            lvInfo.ItemsSource = simulationModels;
         }
 
         /// <summary>
@@ -200,6 +196,10 @@ namespace ModelingSystem
 
                 stackMessagesSuccess.Children.Add(mess);
             }
+
+            simulationModels.Add(new StateSimulationModel(model.TimeModel,
+                model.CountMesIntercept, model.CountInclusionReserveChannel,
+                model.StateChannelMain, model.StateChannelReserve));
         }
 
         #region Обработчики событий
@@ -232,6 +232,7 @@ namespace ModelingSystem
                 Button_Start.IsEnabled = false;
                 progressBar.Maximum = simulationModel.TimeEnd;
                 progressBar.Minimum = 0;
+                simulationModels.Clear();
                 stackMessagesSuccess.Children.Clear();
 
                 tokenSource = new CancellationTokenSource();

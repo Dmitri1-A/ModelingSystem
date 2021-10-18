@@ -121,22 +121,27 @@
 
             <ProgressBar Name="progressBar" Grid.Row="0" Margin="5,0,5,0"></ProgressBar>
             <!--Таблица-->
-            <ListView Name="lvIndicators" Grid.Row="1" Margin="5,7,5,5">
+            <ListView Name="lvInfo" Grid.Row="1" Margin="5,7,5,5">
                 <ListView.View>
                     <GridView>
-                        <!--<GridViewColumn DisplayMemberBinding="{Binding NumTime}">
-                            t()
+                        <GridViewColumn Width="40" DisplayMemberBinding="{Binding TimeModel}">
+                            t(с)
                         </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding NumInterruptMessages}">
+                        <GridViewColumn DisplayMemberBinding="{Binding StateChannelMain}">
+                            Состояние основного канала
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding StateChannelReserve}">
+                            Состояние запасного канала
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding CountMesIntercept}">
                             Число прерванных сообщений
                         </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding NumSpareChannel}">
+                        <GridViewColumn DisplayMemberBinding="{Binding CountInclusionReserveChannel}">
                             Количество включений запасного канала
-                        </GridViewColumn>-->
+                        </GridViewColumn>
                     </GridView>
                 </ListView.View>
             </ListView>
-
         </Grid>
     </Grid>
 </Window>

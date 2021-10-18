@@ -8,7 +8,7 @@ using System.Windows.Threading;
 
 namespace ModelingSystem
 {
-    class SimulationModel
+    public class SimulationModel
     {
         public enum StateChannel
         {
@@ -97,6 +97,11 @@ namespace ModelingSystem
         /// </summary>
         public int CountMesTransferred { get; set; }
 
+        /// <summary>
+        /// Количество включений запасного канала
+        /// </summary>
+        public int CountInclusionReserveChannel { get; set; }
+
         public int TimeModel { get; set; }
         public int TimeEnd { get; set; }
         public int TimeStep { get; set; }
@@ -121,6 +126,7 @@ namespace ModelingSystem
             BufferCapacity = capacity;
             BufferSize = 0;
             CountMesIntercept = 0;
+            CountInclusionReserveChannel = 0;
             TimeEnd = timeEnd;
             TimeStep = timeStep;
             TimeModel = 0;
@@ -201,6 +207,8 @@ namespace ModelingSystem
                 {
                     if (StateChannelMain == StateChannel.Broken)
                     {
+                        CountInclusionReserveChannel++;
+
                         if (BufferSize > 0)
                         {
                             StateChannelReserve = StateChannel.Transfer;
