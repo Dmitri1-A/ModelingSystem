@@ -90,12 +90,16 @@ namespace ModelingSystem
         /// <summary>
         /// Количество прерванных сообщений
         /// </summary>
-        public int CountIntercept { get; set; }
+        public int CountMesIntercept { get; set; }
+
+        /// <summary>
+        /// Количество переданных сообщений
+        /// </summary>
+        public int CountMesTransferred { get; set; }
 
         public int TimeModel { get; set; }
         public int TimeEnd { get; set; }
         public int TimeStep { get; set; }
-
         public int TimeSpeed { get; set; }
 
         public StateChannel StateChannelMain { get; set; }
@@ -104,32 +108,23 @@ namespace ModelingSystem
         public SimulationModel(int t = 0, int t1 = 0, int t2 = 0, int t3 = 0,
             int t4 = 0, int t5 = 0, int timeEnd = 3600, int timeStep = 1,
             int capacity = 4, Dispatcher dispatcher = null,
-            Action<SimulationModel> action = null)
+            int timeSpeed = 1, Action<SimulationModel> action = null)
         {
+            WindowDispatcher = dispatcher;
+            WindowsStateFunc = action;
             T = t;
             T1 = t1;
             T2 = t2;
             T3 = t3;
             T4 = t4;
             T5 = t5;
+            BufferCapacity = capacity;
+            BufferSize = 0;
+            CountMesIntercept = 0;
             TimeEnd = timeEnd;
             TimeStep = timeStep;
             TimeModel = 0;
-            BufferCapacity = capacity;
-            WindowDispatcher = dispatcher;
-            WindowsStateFunc = action;
-        }
-
-        public void ChangeStateChannelMain(StateChannel state)
-        {
-            StateChannelMain = state;
-
-            // Увеличить количество прерванных сообщений, если основной канал
-            // переходит из transfer в broken
-            if ((StateChannel.Transfer == StateChannelMain) &&
-                (StateChannel.Broken == state))
-                CountIntercept++;
-
+            TimeSpeed = timeSpeed;
         }
 
         /// <summary>
@@ -144,12 +139,13 @@ namespace ModelingSystem
             t5End = T5;
             tEnd = T;
 
+            StateChannelMain = StateChannel.Enabled;
+            StateChannelReserve = StateChannel.Disabled;
+
             while (TimeModel < TimeEnd)
             {
                 if (token.IsCancellationRequested)
                     return;
-
-                TimeModel += TimeStep;
 
                 // Проверка прихода сообщения
                 if (t4End <= TimeModel)
@@ -167,7 +163,10 @@ namespace ModelingSystem
                     t3End <= TimeModel)
                 {
                     if (StateChannel.Transfer == StateChannelMain)
+                    {
                         BufferSize++;
+                        CountMesIntercept++;
+                    }
 
                     StateChannelMain = StateChannel.Broken;
                     t2End = TimeModel + T2;
@@ -177,6 +176,8 @@ namespace ModelingSystem
                 // Время восстановления канала?
                 if (StateChannel.Broken == StateChannelMain && t2End <= TimeModel)
                 {
+                    t3End = TimeModel + T3;
+
                     if (BufferSize > 0)
                     {
                         StateChannelMain = StateChannel.Transfer;
@@ -198,27 +199,43 @@ namespace ModelingSystem
                 // Запустить запасной канал, если он отключен
                 if (StateChannel.Disabled == StateChannelReserve && tEnd <= TimeModel)
                 {
-                    if (BufferSize > 0)
+                    if (StateChannelMain == StateChannel.Broken)
                     {
-                        StateChannelReserve = StateChannel.Transfer;
-                        BufferSize--;
-                        t5End = TimeModel + T5;
+                        if (BufferSize > 0)
+                        {
+                            StateChannelReserve = StateChannel.Transfer;
+                            BufferSize--;
+                            t5End = TimeModel + T5;
+                        }
+                        else
+                            StateChannelReserve = StateChannel.Enabled;
                     }
                     else
-                        StateChannelReserve = StateChannel.Enabled;
+                        StateChannelReserve = StateChannel.Disabled;
                 }
 
-                // Запустить запасной канал, если он простаивает
-                if (StateChannel.Enabled == StateChannelReserve && BufferSize > 0)
+                // Начать передачу по запасному каналу, если он простаивает
+                if (StateChannel.Enabled == StateChannelReserve)
                 {
-                    StateChannelReserve = StateChannel.Transfer;
-                    BufferSize--;
-                    t5End = TimeModel + T5;
+                    if (StateChannelMain == StateChannel.Broken)
+                    {
+                        if (BufferSize > 0)
+                        {
+                            StateChannelReserve = StateChannel.Transfer;
+                            BufferSize--;
+                            t5End = TimeModel + T5;
+                        }
+                        else
+                            StateChannelReserve = StateChannel.Enabled;
+                    }
+                    else
+                        StateChannelReserve = StateChannel.Disabled;
                 }
 
                 // Основной канал передал сообщение?
                 if (StateChannel.Transfer == StateChannelMain && t1End <= TimeModel)
                 {
+                    CountMesTransferred++; 
                     if (BufferSize > 0)
                     {
                         StateChannelMain = StateChannel.Transfer;
@@ -230,16 +247,22 @@ namespace ModelingSystem
                 }
 
                 // Запасной канал передал сообщение?
-                if (StateChannel.Transfer == StateChannelReserve && t1End <= TimeModel)
+                if (StateChannel.Transfer == StateChannelReserve && t5End <= TimeModel)
                 {
-                    if (BufferSize > 0)
+                    CountMesTransferred++;
+                    if (StateChannelMain == StateChannel.Broken)
                     {
-                        StateChannelReserve = StateChannel.Transfer;
-                        BufferSize--;
-                        t5End = TimeModel + T5;
+                        if (BufferSize > 0)
+                        {
+                            StateChannelReserve = StateChannel.Transfer;
+                            BufferSize--;
+                            t5End = TimeModel + T5;
+                        }
+                        else
+                            StateChannelReserve = StateChannel.Enabled;
                     }
                     else
-                        StateChannelReserve = StateChannel.Enabled;
+                        StateChannelReserve = StateChannel.Disabled;
                 }
 
                 if (!WindowDispatcher.CheckAccess())
@@ -249,7 +272,9 @@ namespace ModelingSystem
                 else
                     WindowsStateFunc(this);
 
-                Thread.Sleep(11 - TimeSpeed);
+                TimeModel += TimeStep;
+
+                Thread.Sleep(TimeSpeed);
 
                 if (token.IsCancellationRequested)
                     return;

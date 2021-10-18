@@ -150,20 +150,55 @@ namespace ModelingSystem
         {
             progressBar.Value = model.TimeModel;
 
-            switch (model.StateChannelMain)
+            rectangleChannelMain.Fill = model.StateChannelMain switch
             {
-                case SimulationModel.StateChannel.Enabled:
-                    rectangleMainChannel.Fill = null;
-                    break;
-                case SimulationModel.StateChannel.Transfer:
-                    rectangleMainChannel.Fill = Brushes.GreenYellow;
-                    break;
-                case SimulationModel.StateChannel.Broken:
-                    rectangleMainChannel.Fill = Brushes.Red;
-                    break;
-                default:
-                    rectangleMainChannel.Fill = null;
-                    break;
+                SimulationModel.StateChannel.Enabled => null,
+                SimulationModel.StateChannel.Transfer => Brushes.GreenYellow,
+                SimulationModel.StateChannel.Broken => Brushes.Red,
+                SimulationModel.StateChannel.Disabled => null,
+                _ => null,
+            };
+
+            rectangleChannelReserve.Fill = model.StateChannelReserve switch
+            {
+                SimulationModel.StateChannel.Enabled => null,
+                SimulationModel.StateChannel.Transfer => Brushes.GreenYellow,
+                SimulationModel.StateChannel.Disabled => Brushes.Gray,
+                SimulationModel.StateChannel.Broken => null,
+                _ => null,
+            };
+
+            stackMessages.Children.Clear();
+            for (int i = 0; i < model.BufferSize; i++)
+            {
+                Rectangle mess = new Rectangle();
+                mess.Height = 30;
+                mess.Width = 40;
+                mess.Fill = Brushes.Green;
+                mess.Margin = new Thickness(0, 0, 0, 5);
+                mess.HorizontalAlignment = HorizontalAlignment.Center;
+
+                stackMessages.Children.Add(mess);
+            }
+
+            int countElem = stackMessagesSuccess.Children.Count;
+            int countNewElem = model.CountMesTransferred - countElem;
+
+            for (int i = 0; i < countNewElem; i++)
+            {
+                Label mess = new();
+                mess.Height = 25;
+                mess.Width = 40;
+                mess.Background = Brushes.Green;
+                mess.Margin = new Thickness(0, 0, 0, 5);
+                mess.HorizontalAlignment = HorizontalAlignment.Stretch;
+                mess.VerticalAlignment = VerticalAlignment.Stretch;
+                mess.VerticalContentAlignment = VerticalAlignment.Center;
+                mess.HorizontalContentAlignment = HorizontalAlignment.Center;
+                mess.Content = (countElem++).ToString();
+                mess.Foreground = Brushes.White;
+
+                stackMessagesSuccess.Children.Add(mess);
             }
         }
 
@@ -192,11 +227,12 @@ namespace ModelingSystem
 
                 simulationModel = new SimulationModel(T, t1, t2, t3, t4, t5,
                     dispatcher: Dispatcher, action: ChangeStateScene);
-                simulationModel.TimeSpeed = (int)sliderSpeed.Value;
+                simulationModel.TimeSpeed = (int)sliderSpeed.Maximum + 1 - (int)sliderSpeed.Value;
 
                 Button_Start.IsEnabled = false;
                 progressBar.Maximum = simulationModel.TimeEnd;
                 progressBar.Minimum = 0;
+                stackMessagesSuccess.Children.Clear();
 
                 tokenSource = new CancellationTokenSource();
 
@@ -222,7 +258,7 @@ namespace ModelingSystem
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (null != simulationModel)
-                simulationModel.TimeSpeed = (int)e.NewValue;
+                simulationModel.TimeSpeed = (int)sliderSpeed.Maximum + 1 - (int)e.NewValue;
         }
     }
 }
