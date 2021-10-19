@@ -138,6 +138,19 @@ namespace ModelingSystem
         /// </summary>
         public void RunSimulation(CancellationToken token)
         {
+            // Передает сообщение по запасному каналу, если буфер не пустой
+            void actionReserve()
+            {
+                if (BufferSize > 0)
+                {
+                    StateChannelReserve = StateChannel.Transfer;
+                    BufferSize--;
+                    t5End = TimeModel + T5;
+                }
+                else
+                    StateChannelReserve = StateChannel.Enabled;
+            }
+
             t1End = T1;
             t2End = T2;
             t3End = T3;
@@ -178,9 +191,8 @@ namespace ModelingSystem
                     t2End = TimeModel + T2;
                     tEnd = TimeModel + T;
                 }
-
-                // Время восстановления канала?
-                if (StateChannel.Broken == StateChannelMain && t2End <= TimeModel)
+                // Время восстановления основного канала?
+                else if (StateChannel.Broken == StateChannelMain && t2End <= TimeModel)
                 {
                     t3End = TimeModel + T3;
 
@@ -193,57 +205,18 @@ namespace ModelingSystem
                     else
                         StateChannelMain = StateChannel.Enabled;
                 }
-
                 // Начать передачу по основному каналу, если он простаивает
-                if (StateChannel.Enabled == StateChannelMain && BufferSize > 0)
+                else if (StateChannel.Enabled == StateChannelMain && BufferSize > 0)
                 {
                     StateChannelMain = StateChannel.Transfer;
                     BufferSize--;
                     t1End = TimeModel + T1;
                 }
-
-                // Запустить запасной канал, если он отключен
-                if (StateChannel.Disabled == StateChannelReserve && tEnd <= TimeModel)
-                {
-                    if (StateChannelMain == StateChannel.Broken)
-                    {
-                        CountInclusionReserveChannel++;
-
-                        if (BufferSize > 0)
-                        {
-                            StateChannelReserve = StateChannel.Transfer;
-                            BufferSize--;
-                            t5End = TimeModel + T5;
-                        }
-                        else
-                            StateChannelReserve = StateChannel.Enabled;
-                    }
-                    else
-                        StateChannelReserve = StateChannel.Disabled;
-                }
-
-                // Начать передачу по запасному каналу, если он простаивает
-                if (StateChannel.Enabled == StateChannelReserve)
-                {
-                    if (StateChannelMain == StateChannel.Broken)
-                    {
-                        if (BufferSize > 0)
-                        {
-                            StateChannelReserve = StateChannel.Transfer;
-                            BufferSize--;
-                            t5End = TimeModel + T5;
-                        }
-                        else
-                            StateChannelReserve = StateChannel.Enabled;
-                    }
-                    else
-                        StateChannelReserve = StateChannel.Disabled;
-                }
-
                 // Основной канал передал сообщение?
-                if (StateChannel.Transfer == StateChannelMain && t1End <= TimeModel)
+                else if (StateChannel.Transfer == StateChannelMain && t1End <= TimeModel)
                 {
-                    CountMesTransferred++; 
+                    CountMesTransferred++;
+
                     if (BufferSize > 0)
                     {
                         StateChannelMain = StateChannel.Transfer;
@@ -254,20 +227,35 @@ namespace ModelingSystem
                         StateChannelMain = StateChannel.Enabled;
                 }
 
+                // Запустить запасной канал, если он отключен и основной канал вышел из строя
+                if (StateChannel.Disabled == StateChannelReserve && tEnd <= TimeModel)
+                {
+                    if (StateChannelMain == StateChannel.Broken)
+                    {
+                        CountInclusionReserveChannel++;
+
+                        actionReserve();
+                    }
+                    else
+                        StateChannelReserve = StateChannel.Disabled;
+                }
+                // Начать передачу по запасному каналу, если он простаивает
+                else if (StateChannel.Enabled == StateChannelReserve)
+                {
+                    if (StateChannelMain == StateChannel.Broken)
+                    {
+                        actionReserve();
+                    }
+                    else
+                        StateChannelReserve = StateChannel.Disabled;
+                }
                 // Запасной канал передал сообщение?
-                if (StateChannel.Transfer == StateChannelReserve && t5End <= TimeModel)
+                else if (StateChannel.Transfer == StateChannelReserve && t5End <= TimeModel)
                 {
                     CountMesTransferred++;
                     if (StateChannelMain == StateChannel.Broken)
                     {
-                        if (BufferSize > 0)
-                        {
-                            StateChannelReserve = StateChannel.Transfer;
-                            BufferSize--;
-                            t5End = TimeModel + T5;
-                        }
-                        else
-                            StateChannelReserve = StateChannel.Enabled;
+                        actionReserve();
                     }
                     else
                         StateChannelReserve = StateChannel.Disabled;

@@ -1,6 +1,8 @@
-﻿using System;
+﻿using OfficeOpenXml;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -14,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Diagnostics;
 
 namespace ModelingSystem
 {
@@ -35,6 +38,8 @@ namespace ModelingSystem
             InitializeComponent();
 
             lvInfo.ItemsSource = simulationModels;
+
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
 
         /// <summary>
@@ -230,6 +235,7 @@ namespace ModelingSystem
                 simulationModel.TimeSpeed = (int)sliderSpeed.Maximum + 1 - (int)sliderSpeed.Value;
 
                 Button_Start.IsEnabled = false;
+                ButtonUpload.IsEnabled = false;
                 progressBar.Maximum = simulationModel.TimeEnd;
                 progressBar.Minimum = 0;
                 simulationModels.Clear();
@@ -251,15 +257,145 @@ namespace ModelingSystem
                     tokenSource = null;
                     simulationModel = null;
                     Button_Start.IsEnabled = true;
+                    ButtonUpload.IsEnabled = true;
                 }
             }
         }
-        #endregion
-
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (null != simulationModel)
                 simulationModel.TimeSpeed = (int)sliderSpeed.Maximum + 1 - (int)e.NewValue;
         }
+
+        private void Button_Click_Upload_Protocol_Simulation(object sender, RoutedEventArgs e)
+        {
+            if (simulationModels.Count < 1)
+            {
+                MessageBox.Show("Нет данных для выгрузки");
+                return;
+            }
+
+            ButtonUpload.IsEnabled = false;
+
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.FileName = "Протокол моделирования"; // Default file name
+            dlg.DefaultExt = ".xlsx"; // Default file extension
+            dlg.Filter = "Excel|*.xlsx"; // Filter files by extension
+
+            bool? result = dlg.ShowDialog();
+
+            // Process save file dialog box results
+            if (result == true)
+            {
+                // Save document
+                var file = new FileInfo(dlg.FileName);
+
+                if (file.Exists)
+                {
+                    bool flag = true;
+
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch (IOException ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        flag = false;
+                    }
+                    catch (System.Security.SecurityException ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        flag = false;
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        flag = false;
+                    }
+
+                    if (flag == false)
+                        return;
+                }
+
+                try
+                {
+                    using (var package = new ExcelPackage(file))
+                    {
+                        var sheet = package.Workbook.Worksheets.Add("Протокол моделирования");
+
+                        sheet.Cells[1, 1].Value = "t(c)";
+                        sheet.Cells[1, 2].Value = "Состояние основного канала";
+                        sheet.Cells[1, 3].Value = "Состояние запасного канала";
+                        sheet.Cells[1, 4].Value = "Число прерванных сообщений";
+                        sheet.Cells[1, 5].Value = "Количество включений запасного канала";
+
+                        int row = 2;
+                        foreach (StateSimulationModel state in simulationModels)
+                        {
+                            sheet.Cells[row, 1].Value = state.TimeModel;
+                            sheet.Cells[row, 2].Value = state.StateChannelMain;
+                            sheet.Cells[row, 3].Value = state.StateChannelReserve;
+                            sheet.Cells[row, 4].Value = state.CountMesIntercept;
+                            sheet.Cells[row, 5].Value = state.CountInclusionReserveChannel;
+                            row++;
+                        }
+
+                        sheet.Column(1).AutoFit();
+                        sheet.Column(2).AutoFit();
+                        sheet.Column(3).AutoFit();
+                        sheet.Column(4).AutoFit();
+                        sheet.Column(5).AutoFit();
+
+                        package.Save();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+
+                file = new FileInfo(file.FullName);
+
+                if (file.Exists)
+                {
+                    ProcessStartInfo info = new ProcessStartInfo();
+                    info.Verb = "Open";
+                    info.UseShellExecute = true;
+                    info.CreateNoWindow = true;
+                    info.WindowStyle = ProcessWindowStyle.Maximized;
+                    info.FileName = file.Name;
+                    info.WorkingDirectory = file.DirectoryName;
+                    var verbs = info.Verbs;
+
+                    if (verbs.Contains(info.Verb)) {
+                        try
+                        {
+                            Process.Start(info);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            MessageBox.Show(ex.Message);
+                        }
+                        catch (ArgumentNullException ex)
+                        {
+                            MessageBox.Show(ex.Message);
+                        }
+                        catch (PlatformNotSupportedException ex)
+                        {
+                            MessageBox.Show(ex.Message);
+                        }
+                        catch (System.ComponentModel.Win32Exception ex)
+                        {
+                            MessageBox.Show(ex.Message);
+                        }
+                    }
+                }
+            }
+
+            ButtonUpload.IsEnabled = true;
+        }
+        #endregion
+
     }
 }
