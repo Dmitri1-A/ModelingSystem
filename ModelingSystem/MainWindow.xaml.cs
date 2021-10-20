@@ -27,13 +27,17 @@ namespace ModelingSystem
     {
         private CancellationTokenSource tokenSource = null;
 
-        private ObservableCollection<StateSimulationModel> simulationModels;
+        private ManualResetEvent _wait = null;
+
+        private bool isPause = false;
+
+        private ObservableCollection<SimulationModel> simulationModels;
 
         private SimulationModel simulationModel = null;
 
         public MainWindow()
         {
-            simulationModels = new ObservableCollection<StateSimulationModel>();
+            simulationModels = new ObservableCollection<SimulationModel>();
 
             InitializeComponent();
 
@@ -136,6 +140,20 @@ namespace ModelingSystem
                 }
             }
 
+            if (!int.TryParse(TextboxBufferSize.Text, out num))
+            {
+                message += "Размер буфера должен быть целым числом\n";
+                bRes = false;
+            }
+            else
+            {
+                if (num < 0)
+                {
+                    message += "Размер буфера должен быть неотрицательным числом\n";
+                    bRes = false;
+                }
+            }
+
             if (message.Length > 0)
             {
                 MessageBox.Show(message, "Неверные данные", MessageBoxButton.OK);
@@ -184,15 +202,14 @@ namespace ModelingSystem
 
             LabelCountMessageTransfered.Content = model.CountMesTransferred;
 
-            simulationModels.Add(new StateSimulationModel(model.TimeModel,
-                model.CountMesIntercept, model.CountInclusionReserveChannel,
-                model.StateChannelMain, model.StateChannelReserve));
+            simulationModels.Add(model);
         }
 
         #region Обработчики событий
 
         private void Button_Click_End(object sender, RoutedEventArgs e)
         {
+            _wait?.Set();
             tokenSource?.Cancel();
         }
 
@@ -211,21 +228,27 @@ namespace ModelingSystem
                 int t4 = int.Parse(TextboxT4.Text);
                 int t5 = int.Parse(TextboxT5.Text);
                 int T = int.Parse(TextboxT.Text);
+                int bufSize = int.Parse(TextboxBufferSize.Text);
 
                 simulationModel = new SimulationModel(T, t1, t2, t3, t4, t5,
-                    dispatcher: Dispatcher, action: ChangeStateScene);
+                    dispatcher: Dispatcher, action: ChangeStateScene, capacity: bufSize);
                 simulationModel.TimeSpeed = (int)sliderSpeed.Maximum + 1 - (int)sliderSpeed.Value;
 
                 Button_Start.IsEnabled = false;
                 ButtonUpload.IsEnabled = false;
+                Button_TogglePlay.IsEnabled = true;
+                Button_TogglePlay.Content = "Стоп";
                 progressBar.Maximum = simulationModel.TimeEnd;
                 progressBar.Minimum = 0;
                 simulationModels.Clear();
+                isPause = false;
+
+                _wait = new ManualResetEvent(true);
 
                 tokenSource = new CancellationTokenSource();
 
                 Task task = Task.Factory.StartNew(
-                    () => simulationModel.RunSimulation(tokenSource.Token),
+                    () => simulationModel.RunSimulation(tokenSource.Token, _wait),
                     tokenSource.Token);
 
                 try
@@ -236,9 +259,14 @@ namespace ModelingSystem
                 {
                     tokenSource.Dispose();
                     tokenSource = null;
+                    _wait.Dispose();
+                    _wait = null;
                     simulationModel = null;
                     Button_Start.IsEnabled = true;
                     ButtonUpload.IsEnabled = true;
+                    Button_TogglePlay.IsEnabled = false;
+                    Button_TogglePlay.Content = "Стоп";
+                    isPause = false;
                 }
             }
         }
@@ -250,6 +278,103 @@ namespace ModelingSystem
 
         private void Button_Click_Upload_Protocol_Simulation(object sender, RoutedEventArgs e)
         {
+            Action<FileInfo> uploadDataToExcel = (FileInfo fileInfo) =>
+            {
+                bool flag = true;
+
+                try
+                {
+                    using (var package = new ExcelPackage(fileInfo))
+                    {
+                        ExcelWorksheet sheet = package.Workbook.Worksheets.Add("Протокол моделирования");
+
+                        sheet.Cells[1, 1].Value = "t(c)";
+                        sheet.Cells[1, 2].Value = "Основной канал";
+                        sheet.Cells[1, 3].Value = "Запасной канал";
+                        sheet.Cells[1, 4].Value = "Сообщений в буфере";
+                        sheet.Cells[1, 5].Value = "Число прерванных сообщений";
+                        sheet.Cells[1, 6].Value = "Количество включений запасного канала";
+                        sheet.Cells[1, 7].Value = "Сообщений отброшено";
+                        sheet.Cells[1, 8].Value = "Сообщение пришло";
+
+                        int row = 2;
+                        foreach (SimulationModel state in simulationModels)
+                        {
+                            sheet.Cells[row, 1].Value = state.TimeModel;
+                            sheet.Cells[row, 2].Value = state.StateChannelMain;
+                            sheet.Cells[row, 3].Value = state.StateChannelReserve;
+                            sheet.Cells[row, 4].Value = state.BufferSize;
+                            sheet.Cells[row, 5].Value = state.CountMesIntercept;
+                            sheet.Cells[row, 6].Value = state.CountInclusionReserveChannel;
+                            sheet.Cells[row, 7].Value = state.CountMesDiscarded;
+                            sheet.Cells[row, 8].Value = state.MessageWasIn;
+                            row++;
+                        }
+
+                        for (int i = 1; i <= 8; i++)
+                        {
+                            sheet.Column(i).AutoFit();
+                        }
+
+                        package.Save();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    flag = false;
+                }
+
+                if (!flag)
+                    return;
+
+                var resultMsg = MessageBox.Show("Открыть файл протокола моделирования?",
+                    "Открыть?",
+                    MessageBoxButton.OKCancel, MessageBoxImage.Question);
+
+                if (MessageBoxResult.OK == resultMsg)
+                {
+                    var file = new FileInfo(fileInfo.FullName);
+
+                    if (file.Exists)
+                    {
+                        ProcessStartInfo info = new ProcessStartInfo();
+                        info.Verb = "Open";
+                        info.UseShellExecute = true;
+                        info.CreateNoWindow = true;
+                        info.WindowStyle = ProcessWindowStyle.Maximized;
+                        info.FileName = file.Name;
+                        info.WorkingDirectory = file.DirectoryName;
+                        var verbs = info.Verbs;
+
+                        // Открыть файл xlsx
+                        if (verbs.Contains(info.Verb))
+                        {
+                            try
+                            {
+                                Process.Start(info);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                MessageBox.Show(ex.Message);
+                            }
+                            catch (ArgumentNullException ex)
+                            {
+                                MessageBox.Show(ex.Message);
+                            }
+                            catch (PlatformNotSupportedException ex)
+                            {
+                                MessageBox.Show(ex.Message);
+                            }
+                            catch (System.ComponentModel.Win32Exception ex)
+                            {
+                                MessageBox.Show(ex.Message);
+                            }
+                        }
+                    }
+                }
+            };
+
             if (simulationModels.Count < 1)
             {
                 MessageBox.Show("Нет данных для выгрузки");
@@ -270,11 +395,10 @@ namespace ModelingSystem
             {
                 // Save document
                 var file = new FileInfo(dlg.FileName);
+                bool flag = true;
 
                 if (file.Exists)
                 {
-                    bool flag = true;
-
                     try
                     {
                         file.Delete();
@@ -294,89 +418,59 @@ namespace ModelingSystem
                         MessageBox.Show(ex.Message);
                         flag = false;
                     }
+}
 
-                    if (flag == false)
-                        return;
-                }
-
-                try
-                {
-                    using (var package = new ExcelPackage(file))
-                    {
-                        var sheet = package.Workbook.Worksheets.Add("Протокол моделирования");
-
-                        sheet.Cells[1, 1].Value = "t(c)";
-                        sheet.Cells[1, 2].Value = "Состояние основного канала";
-                        sheet.Cells[1, 3].Value = "Состояние запасного канала";
-                        sheet.Cells[1, 4].Value = "Число прерванных сообщений";
-                        sheet.Cells[1, 5].Value = "Количество включений запасного канала";
-
-                        int row = 2;
-                        foreach (StateSimulationModel state in simulationModels)
-                        {
-                            sheet.Cells[row, 1].Value = state.TimeModel;
-                            sheet.Cells[row, 2].Value = state.StateChannelMain;
-                            sheet.Cells[row, 3].Value = state.StateChannelReserve;
-                            sheet.Cells[row, 4].Value = state.CountMesIntercept;
-                            sheet.Cells[row, 5].Value = state.CountInclusionReserveChannel;
-                            row++;
-                        }
-
-                        sheet.Column(1).AutoFit();
-                        sheet.Column(2).AutoFit();
-                        sheet.Column(3).AutoFit();
-                        sheet.Column(4).AutoFit();
-                        sheet.Column(5).AutoFit();
-
-                        package.Save();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
-
-                file = new FileInfo(file.FullName);
-
-                if (file.Exists)
-                {
-                    ProcessStartInfo info = new ProcessStartInfo();
-                    info.Verb = "Open";
-                    info.UseShellExecute = true;
-                    info.CreateNoWindow = true;
-                    info.WindowStyle = ProcessWindowStyle.Maximized;
-                    info.FileName = file.Name;
-                    info.WorkingDirectory = file.DirectoryName;
-                    var verbs = info.Verbs;
-
-                    if (verbs.Contains(info.Verb)) {
-                        try
-                        {
-                            Process.Start(info);
-                        }
-                        catch (InvalidOperationException ex)
-                        {
-                            MessageBox.Show(ex.Message);
-                        }
-                        catch (ArgumentNullException ex)
-                        {
-                            MessageBox.Show(ex.Message);
-                        }
-                        catch (PlatformNotSupportedException ex)
-                        {
-                            MessageBox.Show(ex.Message);
-                        }
-                        catch (System.ComponentModel.Win32Exception ex)
-                        {
-                            MessageBox.Show(ex.Message);
-                        }
-                    }
-                }
+                if (flag)
+                    uploadDataToExcel(file);
             }
 
             ButtonUpload.IsEnabled = true;
         }
-        #endregion
 
+        private void Button_Click_TogglePlay(object sender, RoutedEventArgs e)
+        {
+            // Если поток симуляции не заблокирован
+            if (!isPause)
+            {
+                // Установить событие ManualResetEvent
+                // в несигнальное состояние (блокирует поток)
+                try
+                {
+                    _ = (_wait?.Reset());
+                }
+                catch (ObjectDisposedException)
+                {
+                    _ = MessageBox.Show("Не удалось остановить симуляцию",
+                        "Программная ошибка",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    Button_TogglePlay.Content = "Продолжить";
+                    ButtonUpload.IsEnabled = true;
+                }
+            }
+            else
+            {
+                try
+                {
+                    _ = (_wait?.Set());
+                }
+                catch (ObjectDisposedException)
+                {
+                    _ = MessageBox.Show("Не удалось продолжить симуляцию",
+                        "Программная ошибка",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    Button_TogglePlay.Content = "Стоп";
+                    ButtonUpload.IsEnabled = false;
+                }
+            }
+
+            isPause = !isPause;
+        }
+        #endregion
     }
 }

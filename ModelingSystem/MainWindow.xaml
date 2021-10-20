@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ModelingSystem"
         mc:Ignorable="d"
-        Title="Лабораторная работ №1 Анистратов Дмитрий" Height="500" MinWidth="1100" MinHeight="500">
+        Title="Лабораторная работ №1 Анистратов Дмитрий" MinWidth="1100" MinHeight="700">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition></RowDefinition>
@@ -23,7 +23,7 @@
                     <SolidColorBrush Color="Black" Opacity="1"/>
                 </Border.BorderBrush>
                 <StackPanel Name="stackMessages" Orientation="Vertical" HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch" Background="Transparent"/>
+                            Background="Transparent" VerticalAlignment="Bottom"/>
             </Border>
             <!--<Rectangle Height="200" Canvas.Left="10" Stroke="Black" Canvas.Top="10" Width="50"/>-->
             <Rectangle Name="rectangleChannelMain" Height="35" Canvas.Left="70" Stroke="Black" Canvas.Top="68" Width="359"/>
@@ -99,6 +99,7 @@
         <!--Кнопки-->
         <StackPanel Grid.Row="1" Grid.Column="0" Margin="5,0,5,5">
             <Button Margin="0,5,0,5" Click="Button_Click_Start" Name="Button_Start">Запустить</Button>
+            <Button Margin="0,5,0,5" Click="Button_Click_TogglePlay" Name="Button_TogglePlay" IsEnabled="False">Стоп</Button>
             <Button Margin="0,0,0,5" Click="Button_Click_End">Завершить</Button>
             <Grid Margin="0,0,0,5">
                 <Grid.ColumnDefinitions>
@@ -134,17 +135,20 @@
                         <GridViewColumn DisplayMemberBinding="{Binding StateChannelReserve}">
                             Запасной канал
                         </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding BufferSize}">
+                            Сообщений в буфере
+                        </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding CountMesIntercept}">
                             Число прерванных сообщений
                         </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding CountInclusionReserveChannel}">
                             Количество включений запасного канала
                         </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding}">
-                            Элементов в буфере
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding}">
+                        <GridViewColumn DisplayMemberBinding="{Binding CountMesDiscarded}">
                             Сообщений отброшено
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding MessageWasIn}">
+                            Сообщение пришло
                         </GridViewColumn>
                     </GridView>
                 </ListView.View>
