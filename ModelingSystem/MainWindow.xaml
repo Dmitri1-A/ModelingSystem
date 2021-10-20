@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ModelingSystem"
         mc:Ignorable="d"
-        Title="Лабораторная работ №1 Анистратов Дмитрий" Height="500" Width="820" MinWidth="820" MinHeight="500">
+        Title="Лабораторная работ №1 Анистратов Дмитрий" Height="500" MinWidth="1100" MinHeight="500">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition></RowDefinition>
@@ -18,25 +18,38 @@
         </Grid.ColumnDefinitions>
 
         <Canvas Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
-            <StackPanel Name="stackMessages" Width="50" Height="200" Canvas.Left="10" Canvas.Top="10" Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#99000000"/>
+            <Border Width="50" Height="200" Canvas.Left="10" Canvas.Top="10" BorderThickness="1,1,1,1">
+                <Border.BorderBrush>
+                    <SolidColorBrush Color="Black" Opacity="1"/>
+                </Border.BorderBrush>
+                <StackPanel Name="stackMessages" Orientation="Vertical" HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch" Background="Transparent"/>
+            </Border>
             <!--<Rectangle Height="200" Canvas.Left="10" Stroke="Black" Canvas.Top="10" Width="50"/>-->
-            <Rectangle Name="rectangleChannelMain" Height="35" Canvas.Left="70" Stroke="Black" Canvas.Top="68" Width="390"/>
-            <Rectangle Name="rectangleChannelReserve" Height="36" Canvas.Left="70" Stroke="Black" Canvas.Top="108" Width="390"/>
-            
-            <ScrollViewer Height="200" Canvas.Top="10" Canvas.Left="470"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Name="stackMessagesSuccess" Width="50" Background="#99E6E61A"/>
-            </ScrollViewer>
+            <Rectangle Name="rectangleChannelMain" Height="35" Canvas.Left="70" Stroke="Black" Canvas.Top="68" Width="359"/>
+            <Rectangle Name="rectangleChannelReserve" Height="36" Canvas.Left="70" Stroke="Black" Canvas.Top="108" Width="359"/>
+            <Rectangle Height="133" Canvas.Left="437" Stroke="Black" Canvas.Top="39" Width="90"/>
+            <TextBlock Canvas.Left="439" Canvas.Top="41">
+                Количество
+                <LineBreak/>
+                переданных
+                <LineBreak/>
+                сообщений:
+            </TextBlock>
+            <Label Name="LabelCountMessageTransfered" Content="0" Canvas.Left="439" Canvas.Top="92" Width="67"/>
+            <Label Content="Основной канал" Canvas.Left="195" Canvas.Top="42" RenderTransformOrigin="0.504,0.232"/>
+            <Label Content="Запасной канал" Canvas.Left="199" Canvas.Top="138"/>
+
         </Canvas>
 
         <!--Grid с полями для заполнения -->
         <Grid Grid.Column="0" Grid.Row="0" Margin="5,5,5,5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="70"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
                 <RowDefinition></RowDefinition>
                 <RowDefinition></RowDefinition>
                 <RowDefinition></RowDefinition>
@@ -57,42 +70,29 @@
                      HorizontalContentAlignment="Left" Text="9" Name="TextboxT5"/>
             <TextBox Grid.Column="1" Grid.Row="5" VerticalContentAlignment="Center"
                      HorizontalContentAlignment="Left" Text="5" Name="TextboxT"/>
+            <TextBox Grid.Column="1" Grid.Row="6" VerticalContentAlignment="Center"
+                     HorizontalContentAlignment="Left" Text="5" Name="TextboxBufferSize"/>
 
-            <Label Grid.Column="0" Grid.Row="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
-                t1:
-                <Label.ToolTip>
-                    <ToolTip>Время передачи сообщения по основному каналу</ToolTip>
-                </Label.ToolTip>
+            <Label Grid.Column="0" Grid.Row="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="11">
+                Передача сообщения по основному каналу t1(с):
             </Label>
-            <Label Grid.Column="0" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
-                t2:
-                <Label.ToolTip>
-                    <ToolTip>Время восстановления основного канала</ToolTip>
-                </Label.ToolTip>
+            <Label Grid.Column="0" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="11">
+                Восстановление основного канала t2(с):
             </Label>
             <Label Grid.Column="0" Grid.Row="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
-                t3:
-                <Label.ToolTip>
-                    <ToolTip>Интервал времени, через который происходят сбои в основном канале</ToolTip>
-                </Label.ToolTip>
+                Интервал сбоев в основном канале t3(с):
             </Label>
-            <Label Grid.Column="0" Grid.Row="3" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
-                t4:
-                <Label.ToolTip>
-                    <ToolTip>Время поступления сообщения</ToolTip>
-                </Label.ToolTip>
+            <Label Grid.Column="0" Grid.Row="3" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="11">
+                Поступление сообщения t4(с):
             </Label>
             <Label Grid.Column="0" Grid.Row="4" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
-                t5:
-                <Label.ToolTip>
-                    <ToolTip>Время передачи сообщения по запасному каналу</ToolTip>
-                </Label.ToolTip>
+                Передача сообщения по запасному каналу t5(с):
             </Label>
             <Label Grid.Column="0" Grid.Row="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
-                T:
-                <Label.ToolTip>
-                    <ToolTip>Время запуска запасного канала</ToolTip>
-                </Label.ToolTip>
+                Запуск запасного канала T(с):
+            </Label>
+            <Label Grid.Column="0" Grid.Row="6" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
+                Размер буфера:
             </Label>
         </Grid>
 
@@ -129,16 +129,22 @@
                             t(с)
                         </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding StateChannelMain}">
-                            Состояние основного канала
+                            Основной канал
                         </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding StateChannelReserve}">
-                            Состояние запасного канала
+                            Запасной канал
                         </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding CountMesIntercept}">
                             Число прерванных сообщений
                         </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding CountInclusionReserveChannel}">
                             Количество включений запасного канала
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding}">
+                            Элементов в буфере
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding}">
+                            Сообщений отброшено
                         </GridViewColumn>
                     </GridView>
                 </ListView.View>

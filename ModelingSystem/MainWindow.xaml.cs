@@ -182,25 +182,7 @@ namespace ModelingSystem
                 stackMessages.Children.Add(mess);
             }
 
-            int countElem = stackMessagesSuccess.Children.Count;
-            int countNewElem = model.CountMesTransferred - countElem;
-
-            for (int i = 0; i < countNewElem; i++)
-            {
-                Label mess = new();
-                mess.Height = 25;
-                mess.Width = 40;
-                mess.Background = Brushes.Green;
-                mess.Margin = new Thickness(0, 0, 0, 5);
-                mess.HorizontalAlignment = HorizontalAlignment.Stretch;
-                mess.VerticalAlignment = VerticalAlignment.Stretch;
-                mess.VerticalContentAlignment = VerticalAlignment.Center;
-                mess.HorizontalContentAlignment = HorizontalAlignment.Center;
-                mess.Content = (countElem++).ToString();
-                mess.Foreground = Brushes.White;
-
-                stackMessagesSuccess.Children.Add(mess);
-            }
+            LabelCountMessageTransfered.Content = model.CountMesTransferred;
 
             simulationModels.Add(new StateSimulationModel(model.TimeModel,
                 model.CountMesIntercept, model.CountInclusionReserveChannel,
@@ -239,7 +221,6 @@ namespace ModelingSystem
                 progressBar.Maximum = simulationModel.TimeEnd;
                 progressBar.Minimum = 0;
                 simulationModels.Clear();
-                stackMessagesSuccess.Children.Clear();
 
                 tokenSource = new CancellationTokenSource();
 
