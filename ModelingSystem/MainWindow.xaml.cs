@@ -188,13 +188,15 @@ namespace ModelingSystem
             };
 
             stackMessages.Children.Clear();
+            double h = borderMessages.Height;
+            h = model.BufferCapacity > 0 ? h / model.BufferCapacity : h;
             for (int i = 0; i < model.BufferSize; i++)
             {
                 Rectangle mess = new Rectangle();
-                mess.Height = 30;
+                mess.Height = h - 2;
                 mess.Width = 40;
                 mess.Fill = Brushes.Green;
-                mess.Margin = new Thickness(0, 0, 0, 5);
+                mess.Margin = new Thickness(0, 0, 0, 2);
                 mess.HorizontalAlignment = HorizontalAlignment.Center;
 
                 stackMessages.Children.Add(mess);
