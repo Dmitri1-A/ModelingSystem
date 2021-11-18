@@ -40,6 +40,35 @@
             <Label Content="Основной канал" Canvas.Left="195" Canvas.Top="42" RenderTransformOrigin="0.504,0.232"/>
             <Label Content="Запасной канал" Canvas.Left="199" Canvas.Top="138"/>
 
+            <Grid Height="69" Width="336" Canvas.Top="255" Canvas.Left="10" Visibility="Hidden" Name="gridIndicator">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition Width="50"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0"
+                       VerticalContentAlignment="Center" HorizontalContentAlignment="Right"
+                       VerticalAlignment="Center" HorizontalAlignment="Right">
+                    Сообщений прерванно:
+                </Label>
+                <Label Grid.Row="0" Grid.Column="1" Name="labelMessCountIntercept"
+                       VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
+                       VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                
+                <Label Grid.Row="1" Grid.Column="0"
+                       VerticalContentAlignment="Center" HorizontalContentAlignment="Right"
+                       VerticalAlignment="Center" HorizontalAlignment="Right">
+                    Сообщений передано запасным каналом:
+                </Label>
+                <Label Grid.Row="1" Grid.Column="1" Name="labelMessCountReserve"
+                       VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
+                       VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            </Grid>
+
         </Canvas>
 
         <!--Grid с полями для заполнения -->

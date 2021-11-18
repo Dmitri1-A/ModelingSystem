@@ -105,6 +105,11 @@ namespace ModelingSystem
         public int CountMesTransferred { get; set; }
 
         /// <summary>
+        /// Количество переданных сообщений по запасному каналу
+        /// </summary>
+        public int CountMesTransferredReserve { get; set; }
+
+        /// <summary>
         /// Количество включений запасного канала
         /// </summary>
         public int CountInclusionReserveChannel { get; set; }
@@ -139,6 +144,8 @@ namespace ModelingSystem
             BufferSize = 0;
             CountMesIntercept = 0;
             CountMesDiscarded = 0;
+            CountMesTransferred = 0;
+            CountMesTransferredReserve = 0;
             CountInclusionReserveChannel = 0;
             TimeEnd = timeEnd;
             TimeStep = timeStep;
@@ -313,6 +320,8 @@ namespace ModelingSystem
                 else if (StateChannel.Transfer == StateChannelReserve && t5End <= TimeModel)
                 {
                     CountMesTransferred++;
+                    CountMesTransferredReserve++;
+
                     if (StateChannelMain == StateChannel.Broken)
                     {
                         actionReserveChannel();

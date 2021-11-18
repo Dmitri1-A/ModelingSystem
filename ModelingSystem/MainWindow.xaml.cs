@@ -236,6 +236,7 @@ namespace ModelingSystem
                     dispatcher: Dispatcher, action: ChangeStateScene, capacity: bufSize);
                 simulationModel.TimeSpeed = (int)sliderSpeed.Maximum + 1 - (int)sliderSpeed.Value;
 
+                gridIndicator.Visibility = Visibility.Hidden;
                 Button_Start.IsEnabled = false;
                 ButtonUpload.IsEnabled = false;
                 Button_TogglePlay.IsEnabled = true;
@@ -259,6 +260,16 @@ namespace ModelingSystem
                 }
                 finally
                 {
+                    double num = (double)simulationModel.CountMesIntercept / (double)simulationModel.CountMesTransferred * 100;
+                    double percentIntercept = Math.Round(num, 2);
+
+                    num = (double)simulationModel.CountMesTransferredReserve / (double)simulationModel.CountMesTransferred * 100;
+                    double percentTransferReserve = Math.Round(num, 2);
+
+                    gridIndicator.Visibility = Visibility.Visible;
+                    labelMessCountIntercept.Content = percentIntercept.ToString() + "%";
+                    labelMessCountReserve.Content = percentTransferReserve.ToString() + "%";
+
                     tokenSource.Dispose();
                     tokenSource = null;
                     _wait.Dispose();
