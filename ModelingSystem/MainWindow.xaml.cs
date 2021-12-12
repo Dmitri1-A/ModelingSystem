@@ -35,11 +35,15 @@ namespace ModelingSystem
 
         private SimulationModel simulationModel = null;
 
+        Random random;
+
         public MainWindow()
         {
             simulationModels = new ObservableCollection<SimulationModel>();
 
             InitializeComponent();
+
+            random = new Random();
 
             lvInfo.ItemsSource = simulationModels;
 
@@ -283,6 +287,7 @@ namespace ModelingSystem
                 }
             }
         }
+
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (null != simulationModel)
@@ -438,6 +443,80 @@ namespace ModelingSystem
             }
 
             ButtonUpload.IsEnabled = true;
+        }
+
+        private void btnGenerate_Click(object sender, EventArgs e)
+        {
+            Action<FileInfo> uploadDataExcel = (FileInfo fileInfo) =>
+            {
+                try
+                {
+                    using (var package = new ExcelPackage(fileInfo))
+                    {
+                        Distribution distribution = new Distribution(random);
+
+                        ExcelWorksheet sheet = package.Workbook.Worksheets.Add("Числа");
+                        sheet.Cells[1, 1].Value = "Показ. распр.";
+                        sheet.Cells[1, 2].Value = "Норм. распр.";
+
+                        for (int row = 2; row < 2002; row++)
+                        {
+                            double exp, normal;
+                            exp = distribution.Exponential(0.005);
+                            normal = distribution.Normal(2, 7);
+                            sheet.Cells[row, 1].Value = exp;
+                            sheet.Cells[row, 2].Value = normal;
+                        }
+
+                        package.Save();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            };
+
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.FileName = "Числа"; // Default file name
+            dlg.DefaultExt = ".xlsx"; // Default file extension
+            dlg.Filter = "Excel|*.xlsx"; // Filter files by extension
+
+            bool? result = dlg.ShowDialog();
+
+            // Process save file dialog box results
+            if (result == true)
+            {
+                // Save document
+                var file = new FileInfo(dlg.FileName);
+                bool flag = true;
+
+                if (file.Exists)
+                {
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch (IOException ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        flag = false;
+                    }
+                    catch (System.Security.SecurityException ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        flag = false;
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        flag = false;
+                    }
+                }
+
+                if (flag)
+                    uploadDataExcel(file);
+            }
         }
 
         private void Button_Click_TogglePlay(object sender, RoutedEventArgs e)
