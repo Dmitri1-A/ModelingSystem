@@ -228,13 +228,22 @@ namespace ModelingSystem
         {
             if (IsValidField())
             {
-                int t1 = int.Parse(TextboxT1.Text);
+                Distribution distribution = new Distribution(random);
+
                 int t2 = int.Parse(TextboxT2.Text);
-                int t3 = int.Parse(TextboxT3.Text);
-                int t4 = int.Parse(TextboxT4.Text);
-                int t5 = int.Parse(TextboxT5.Text);
                 int T = int.Parse(TextboxT.Text);
                 int bufSize = int.Parse(TextboxBufferSize.Text);
+
+                int t1 = Convert.ToInt32(Math.Round(distribution.Normal(2, 7)));
+                int t5 = Convert.ToInt32(Math.Round(distribution.Normal(2, 9)));
+
+                int t3 = Convert.ToInt32(Math.Round(distribution.Exponential(0.005)));
+                int t4 = Convert.ToInt32(Math.Round(distribution.Exponential(0.1)));
+
+                TextboxT1.Text = t1.ToString();
+                TextboxT3.Text = t3.ToString();
+                TextboxT4.Text = t4.ToString();
+                TextboxT5.Text = t5.ToString();
 
                 simulationModel = new SimulationModel(T, t1, t2, t3, t4, t5,
                     dispatcher: Dispatcher, action: ChangeStateScene, capacity: bufSize);
