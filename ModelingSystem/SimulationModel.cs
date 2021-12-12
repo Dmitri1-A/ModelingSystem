@@ -22,6 +22,8 @@ namespace ModelingSystem
         private Dispatcher WindowDispatcher;
         private Action<SimulationModel> WindowsStateFunc;
 
+        private Distribution distribution1;
+
         /// <summary>
         /// Время задержки запуска запасного канала
         /// </summary>
@@ -130,7 +132,7 @@ namespace ModelingSystem
         public SimulationModel(int t = 0, int t1 = 0, int t2 = 0, int t3 = 0,
             int t4 = 0, int t5 = 0, int timeEnd = 3600, int timeStep = 1,
             int capacity = 4, Dispatcher dispatcher = null,
-            int timeSpeed = 1, Action<SimulationModel> action = null)
+            int timeSpeed = 1, Action<SimulationModel> action = null, Distribution distribution = null)
         {
             WindowDispatcher = dispatcher;
             WindowsStateFunc = action;
@@ -151,6 +153,7 @@ namespace ModelingSystem
             TimeStep = timeStep;
             TimeModel = 0;
             TimeSpeed = timeSpeed;
+            distribution1 = distribution;
         }
 
         /// <summary>
@@ -226,6 +229,12 @@ namespace ModelingSystem
 
                 resetEvent?.WaitOne();
 
+                T1 = Convert.ToInt32(Math.Round(distribution1.Normal(2, 7)));
+                T5 = Convert.ToInt32(Math.Round(distribution1.Normal(2, 9)));
+
+                T3 = Convert.ToInt32(Math.Round(distribution1.Exponential(0.005)));
+                T4 = Convert.ToInt32(Math.Round(distribution1.Exponential(0.1)));
+
                 MessageWasIn = false;
                 // Проверка прихода сообщения
                 if (t4End <= TimeModel)
@@ -233,7 +242,7 @@ namespace ModelingSystem
                     MessageWasIn = true;
 
                     t4End = TimeModel + T4;
-                    
+
                     if (StateChannel.Enabled == StateChannelMain)
                     {
                         StateChannelMain = StateChannel.Transfer;
