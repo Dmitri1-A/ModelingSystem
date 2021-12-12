@@ -228,25 +228,14 @@ namespace ModelingSystem
         {
             if (IsValidField())
             {
-                Distribution distribution = new Distribution(random);
+                Distribution dist = new Distribution(random);
 
                 int t2 = int.Parse(TextboxT2.Text);
                 int T = int.Parse(TextboxT.Text);
                 int bufSize = int.Parse(TextboxBufferSize.Text);
 
-                int t1 = Convert.ToInt32(Math.Round(distribution.Normal(2, 7)));
-                int t5 = Convert.ToInt32(Math.Round(distribution.Normal(2, 9)));
-
-                int t3 = Convert.ToInt32(Math.Round(distribution.Exponential(0.005)));
-                int t4 = Convert.ToInt32(Math.Round(distribution.Exponential(0.1)));
-
-                TextboxT1.Text = t1.ToString();
-                TextboxT3.Text = t3.ToString();
-                TextboxT4.Text = t4.ToString();
-                TextboxT5.Text = t5.ToString();
-
-                simulationModel = new SimulationModel(T, t1, t2, t3, t4, t5,
-                    dispatcher: Dispatcher, action: ChangeStateScene, capacity: bufSize);
+                simulationModel = new SimulationModel(T, t2: t2, dispatcher: Dispatcher,
+                    action: ChangeStateScene, capacity: bufSize, distribution: dist);
                 simulationModel.TimeSpeed = (int)sliderSpeed.Maximum + 1 - (int)sliderSpeed.Value;
 
                 gridIndicator.Visibility = Visibility.Hidden;
@@ -323,6 +312,11 @@ namespace ModelingSystem
                         sheet.Cells[1, 6].Value = "Количество включений запасного канала";
                         sheet.Cells[1, 7].Value = "Сообщений отброшено";
                         sheet.Cells[1, 8].Value = "Сообщение пришло";
+                        sheet.Cells[1, 9].Value = "t1";
+                        sheet.Cells[1, 10].Value = "t2";
+                        sheet.Cells[1, 11].Value = "t3";
+                        sheet.Cells[1, 12].Value = "t4";
+                        sheet.Cells[1, 13].Value = "t5";
 
                         int row = 2;
                         foreach (SimulationModel state in simulationModels)
@@ -335,6 +329,11 @@ namespace ModelingSystem
                             sheet.Cells[row, 6].Value = state.CountInclusionReserveChannel;
                             sheet.Cells[row, 7].Value = state.CountMesDiscarded;
                             sheet.Cells[row, 8].Value = state.MessageWasIn;
+                            sheet.Cells[row, 9].Value = state.T1;
+                            sheet.Cells[row, 10].Value = state.T2;
+                            sheet.Cells[row, 11].Value = state.T3;
+                            sheet.Cells[row, 12].Value = state.T4;
+                            sheet.Cells[row, 13].Value = state.T5;
                             row++;
                         }
 
@@ -366,7 +365,7 @@ namespace ModelingSystem
                     if (file.Exists)
                     {
                         ProcessStartInfo info = new ProcessStartInfo();
-                        info.Verb = "Open";
+                        info.Verb = "open";
                         info.UseShellExecute = true;
                         info.CreateNoWindow = true;
                         info.WindowStyle = ProcessWindowStyle.Maximized;
