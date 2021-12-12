@@ -30,10 +30,17 @@ namespace ModelingSystem
 
             while (val == 0)
             {
-                val = q * Math.Cos(2 * Math.PI * random.NextDouble()) * Math.Sqrt(-2 * Math.Log(random.NextDouble())) + m;
+                val = NormalVal(q, m);
             }
 
             return val;
         }
+
+        public double NormalVal(double q, double m)
+        {
+            return q * Math.Cos(2 * Math.PI * random.NextDouble()) * Math.Sqrt(-2 * Math.Log(random.NextDouble())) + m;
+        }
+
+
     }
 }
