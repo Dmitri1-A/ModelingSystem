@@ -232,6 +232,8 @@ namespace ModelingSystem
                 T1 = Convert.ToInt32(Math.Round(distribution1.Normal(2, 7)));
                 T5 = Convert.ToInt32(Math.Round(distribution1.Normal(2, 9)));
 
+                T2 = Convert.ToInt32(Math.Round(distribution1.CountRandomT2(1, 23)));
+
                 T3 = Convert.ToInt32(Math.Round(distribution1.Exponential(0.005)));
                 T4 = Convert.ToInt32(Math.Round(distribution1.Exponential(0.1)));
 

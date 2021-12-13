@@ -45,8 +45,6 @@ namespace ModelingSystem
 
             random = new Random();
 
-            lvInfo.ItemsSource = simulationModels;
-
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
 
@@ -211,6 +209,54 @@ namespace ModelingSystem
             simulationModels.Add(model);
         }
 
+        private void StudentCriterion(Distribution dist)
+        {
+            int N = 500;
+
+            List<double> a = new List<double>();
+            List<double> b = new List<double>();
+
+            for (int i = 0; i < N * 2; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    a.Add(dist.CountRandomT2(1, 23));
+                }
+                else
+                {
+                    b.Add(dist.CountRandomT2(1, 23));
+                }
+            }
+
+            double aM = a.Sum() / N;
+            double bM = b.Sum() / N;
+            double aD = 0;
+            double bD = 0;
+
+            for (int i = 0; i < N; i++)
+            {
+                aD += Math.Pow(a[i] - aM, 2) / (N - 1);
+                bD += Math.Pow(b[i] - bM, 2) / (N - 1);
+            }
+
+            double D = ((N - 1) * aD + (N - 1) * bD) / (N - 2);
+            double stud = Math.Sqrt((Math.Pow(aM - bM, 2) * Math.Pow(N, 2)) / (D * N * 2));
+            double fisher = 0;
+
+            if (aD >= bD)
+            {
+                fisher = aD / bD;
+            }
+            else
+            {
+                fisher = bD / aD;
+            }
+
+
+            lbStudentN.Content = Math.Round(stud, 3);
+            lbFisherN.Content = Math.Round(fisher, 3);
+        }
+
         #region Обработчики событий
 
         private void Button_Click_End(object sender, RoutedEventArgs e)
@@ -230,11 +276,12 @@ namespace ModelingSystem
             {
                 Distribution dist = new Distribution(random);
 
-                int t2 = int.Parse(TextboxT2.Text);
                 int T = int.Parse(TextboxT.Text);
                 int bufSize = int.Parse(TextboxBufferSize.Text);
 
-                simulationModel = new SimulationModel(T, t2: t2, dispatcher: Dispatcher,
+                StudentCriterion(dist);
+
+                simulationModel = new SimulationModel(T, dispatcher: Dispatcher,
                     action: ChangeStateScene, capacity: bufSize, distribution: dist);
                 simulationModel.TimeSpeed = (int)sliderSpeed.Maximum + 1 - (int)sliderSpeed.Value;
 

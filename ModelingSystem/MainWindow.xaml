@@ -68,7 +68,6 @@
                        VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
                        VerticalAlignment="Center" HorizontalAlignment="Right"/>
             </Grid>
-
         </Canvas>
 
         <!--Grid с полями для заполнения -->
@@ -90,7 +89,7 @@
             <TextBox Grid.Column="1" Grid.Row="0" VerticalContentAlignment="Center"
                      HorizontalContentAlignment="Left" Text="7" Name="TextboxT1" IsEnabled="False"/>
             <TextBox Grid.Column="1" Grid.Row="1" VerticalContentAlignment="Center"
-                     HorizontalContentAlignment="Left" Text="23" Name="TextboxT2"/>
+                     HorizontalContentAlignment="Left" Text="23" Name="TextboxT2" IsEnabled="False"/>
             <TextBox Grid.Column="1" Grid.Row="2" VerticalContentAlignment="Center"
                      HorizontalContentAlignment="Left" Text="200" Name="TextboxT3" IsEnabled="False"/>
             <TextBox Grid.Column="1" Grid.Row="3" VerticalContentAlignment="Center"
@@ -102,19 +101,19 @@
             <TextBox Grid.Column="1" Grid.Row="6" VerticalContentAlignment="Center"
                      HorizontalContentAlignment="Left" Text="5" Name="TextboxBufferSize"/>
 
-            <Label Grid.Column="0" Grid.Row="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="11">
+            <Label Grid.Column="0" Grid.Row="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="11" IsEnabled="False">
                 Передача сообщения по основному каналу t1(с):
             </Label>
-            <Label Grid.Column="0" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="11">
+            <Label Grid.Column="0" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="11" IsEnabled="False">
                 Восстановление основного канала t2(с):
             </Label>
-            <Label Grid.Column="0" Grid.Row="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
+            <Label Grid.Column="0" Grid.Row="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" IsEnabled="False">
                 Интервал сбоев в основном канале t3(с):
             </Label>
-            <Label Grid.Column="0" Grid.Row="3" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="11">
+            <Label Grid.Column="0" Grid.Row="3" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="11" IsEnabled="False">
                 Поступление сообщения t4(с):
             </Label>
-            <Label Grid.Column="0" Grid.Row="4" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
+            <Label Grid.Column="0" Grid.Row="4" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" IsEnabled="False">
                 Передача сообщения по запасному каналу t5(с):
             </Label>
             <Label Grid.Column="0" Grid.Row="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Right">
@@ -145,44 +144,25 @@
             <Button Name="ButtonGenerate" Click="btnGenerate_Click" Margin="0,5,0,0">Сгенерировать величины</Button>
         </StackPanel>
 
-        <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+        <Grid Grid.Row="3" Grid.Column="1"  Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="133"></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="25"></RowDefinition>
-                <RowDefinition></RowDefinition>
+                <RowDefinition Height="25"></RowDefinition>
+                <RowDefinition Height="25"></RowDefinition>
             </Grid.RowDefinitions>
 
-            <ProgressBar Name="progressBar" Grid.Row="0" Margin="5,0,5,0"></ProgressBar>
-            <!--Таблица-->
-            <ListView Name="lvInfo" Grid.Row="1" Margin="5,7,5,5">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Width="40" DisplayMemberBinding="{Binding TimeModel}">
-                            t(с)
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding StateChannelMain}">
-                            Основной канал
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding StateChannelReserve}">
-                            Запасной канал
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding BufferSize}">
-                            Сообщений в буфере
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding CountMesIntercept}">
-                            Число прерванных сообщений
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding CountInclusionReserveChannel}">
-                            Количество включений запасного канала
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding CountMesDiscarded}">
-                            Сообщений отброшено
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding MessageWasIn}">
-                            Сообщение пришло
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+            <ProgressBar Name="progressBar" Grid.Row="0" Grid.ColumnSpan="2" Margin="5,0,5,0"></ProgressBar>
+
+            <Label x:Name="lbFisher" Grid.Row="1" Content="Критерий Фишера:" Width="120" 
+                   HorizontalAlignment="Left"/>
+            <Label x:Name="lbFisherN" Content="" Grid.Row="1" Grid.Column="1" Width="150" HorizontalAlignment="Left"/>
+
+            <Label x:Name="lbStudent" Grid.Row="2" Grid.Column="0" Content="Критерий Стьюдента:" HorizontalAlignment="Left" Width="128"/>
+            <Label x:Name="lbStudentN" Grid.Row="2" Grid.Column="1" Content="" Canvas.Left="409" Width="100" HorizontalAlignment="Left"/>
         </Grid>
     </Grid>
 </Window>
